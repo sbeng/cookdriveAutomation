@@ -1,6 +1,6 @@
-var page = require('webpage').create(),
-    system = require('system'),
-    colors = require('colors'),
+"use strict";
+
+var system = require('system'),
     apiURL;
 
 if (system.args.length < 2) {
@@ -13,12 +13,9 @@ if (system.args.length < 2) {
     phantom.exit(1);
 }
 
-var address = 'http://cookdrive.com.ua/';
-
-page.viewportSize = {
-    width: 1024,
-    height: 768
-};
+var page = new Page().page,
+    colors = require('colors'),
+    address = 'http://cookdrive.com.ua/';
 
 colors.setTheme({
     info: 'green',
@@ -26,40 +23,6 @@ colors.setTheme({
     debug: 'blue',
     error: 'red'
 });
-
-page.onConsoleMessage = function(msg, lineNum, sourceId) {
-    console.log('CONSOLE: ' + msg + ' (from line #' + lineNum + ' in "' + sourceId + '")');
-};
-
-page.onUrlChanged = function(targetUrl) {
-    console.log(('New URL: ' + targetUrl).debug);
-};
-
-page.onLoadFinished = function(status) {
-    var consoleStatus = status === 'success' ? 'info' : 'error';
-    console.log(('Status: ' + status)[consoleStatus]);
-};
-
-page.onAlert = function(msg) {
-    console.log(('ALERT: ' + msg).debug);
-};
-
-phantom.onError = function(msg, trace) {
-    var msgStack = ['PHANTOM ERROR: ' + msg];
-    if (trace && trace.length) {
-        msgStack.push('TRACE:');
-        trace.forEach(function(t) {
-            msgStack.push(' -> ' + (t.file || t.sourceURL) + ': ' + t.line + (t.function ? ' (in function ' + t.function+')' : ''));
-        });
-    }
-    console.error((msgStack.join('\n')).error);
-    phantom.exit(1);
-};
-
-page.onResourceRequested = function(request) {
-    console.log('Request ' + JSON.stringify(request, undefined, 4));
-    console.log(request.url);
-};
 
 page.open(address, function(status) {
     if (status !== 'success') {
@@ -153,16 +116,61 @@ function isUrl(s) {
 
 function sendContent(content) {
     var settings = {
-      operation: 'POST',
-      encoding: 'utf8',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      data: JSON.stringify(content)
+        operation: 'POST',
+        encoding: 'utf8',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(content)
     };
 
     page.open(apiURL, settings, function(status) {
-      console.log('Post data status:', status);
-      phantom.exit(0);
+        console.log('Post data status:', status);
+        phantom.exit(0);
     });
+}
+
+function Page() {
+    var page = require('webpage').create();
+
+    page.viewportSize = {
+        width: 1024,
+        height: 768
+    };
+
+    page.onConsoleMessage = function(msg, lineNum, sourceId) {
+        console.log('CONSOLE: ' + msg + ' (from line #' + lineNum + ' in "' + sourceId + '")');
+    };
+
+    page.onUrlChanged = function(targetUrl) {
+        console.log(('New URL: ' + targetUrl).debug);
+    };
+
+    page.onLoadFinished = function(status) {
+        var consoleStatus = status === 'success' ? 'info' : 'error';
+        console.log(('Status: ' + status)[consoleStatus]);
+    };
+
+    page.onAlert = function(msg) {
+        console.log(('ALERT: ' + msg).debug);
+    };
+
+    phantom.onError = function(msg, trace) {
+        var msgStack = ['PHANTOM ERROR: ' + msg];
+        if (trace && trace.length) {
+            msgStack.push('TRACE:');
+            trace.forEach(function(t) {
+                msgStack.push(' -> ' + (t.file || t.sourceURL) + ': ' + t.line + (t.function ? ' (in function ' + t.function+')' : ''));
+            });
+        }
+        console.error((msgStack.join('\n')).error);
+        phantom.exit(1);
+    };
+
+    page.onResourceRequested = function(request) {
+        console.log('Request ' + JSON.stringify(request, undefined, 4));
+        console.log(request.url);
+    };
+
+    this.page = page;
 }
