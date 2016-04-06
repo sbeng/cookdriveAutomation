@@ -20,4 +20,4 @@ Usage
 -----
 Run parser:
 
-	$ phantomjs src/parser.js http://requestb.in/1kq78im1
+	$ phantomjs src/parser.js <API URL>
