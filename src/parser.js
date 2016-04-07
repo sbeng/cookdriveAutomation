@@ -9,7 +9,7 @@ if (system.args.length < 2) {
 } else if (isUrl(system.args[1])) {
     apiURL = system.args[1];
 } else {
-    console.log(colors.red('Please enter valid URL, like http://name.damain/api-url'));
+    console.log(colors.red('Please enter valid URL, like http://name.domain/api-url'));
     phantom.exit(1);
 }
 
@@ -72,7 +72,8 @@ function parseCategoriesContent(categories, index) {
 
             return contentArray;
         }, getItems);
-        categories[index].content.push(content);
+        
+        categories[index].content = content;
 
         if (index < categories.length - 1) {
             parseCategoriesContent(categories, index + 1);
